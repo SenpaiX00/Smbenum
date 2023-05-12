@@ -1,52 +1,44 @@
-import smbclient
+from smbprotocol.connection import Connection
 
-def find_samba_shares(domain):
 
+def find_samba_shares(domain, username, password):
     smb_shares = []
 
-    
-
     try:
+        # Establish a connection to the domain
+        connection = Connection(username, password, domain)
 
-        # Connect to the domain
+        # Connect to the server
+        connection.connect()
 
-        with smbclient.SambaClient(domain) as client:
+        # List shares on the server
+        shares = connection.list_shares()
 
-            # List all the shares
+        for share in shares:
+            # Add share name to the list
+            smb_shares.append(share.name)
 
-            shares = client.listShares()
+        # Disconnect from the server
+        connection.disconnect()
 
-            for share in shares:
-
-                # Add share name to the list
-
-                smb_shares.append(share.name)
-
-    except smbclient.OperationFailure as e:
-
+    except Exception as e:
         print(f"Failed to connect to the domain: {e}")
 
     return smb_shares
 
-# Replace 'foo.co.uk' with your actual domain
 
+# Replace 'foo.co.uk' with your actual domain
 domain = 'foo.co.uk'
+username = 'your_username'
+password = 'your_password'
 
 # Find all the Samba shares in the domain
-
-shares = find_samba_shares(domain)
+shares = find_samba_shares(domain, username, password)
 
 # Print the found shares
-
 if shares:
-
     print("Samba shares found:")
-
     for share in shares:
-
         print(share)
-
 else:
-
     print("No Samba shares found in the domain.")
-
